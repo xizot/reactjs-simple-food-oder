@@ -1,12 +1,10 @@
 import React, { useReducer } from "react";
 import CartContext from "./cart-context";
 
-const defaultCartState = localStorage.getItem("cart")
-    ? JSON.parse(localStorage.getItem("cart"))
-    : {
-          items: [],
-          totalAmount: 0,
-      };
+const defaultCartState = {
+    items: [],
+    totalAmount: 0,
+};
 
 const cartReducer = (state, action) => {
     if (action.type === "ADD") {
@@ -30,13 +28,7 @@ const cartReducer = (state, action) => {
         } else {
             updatedItems = [...state.items, action.item];
         }
-        localStorage.setItem(
-            "cart",
-            JSON.stringify({
-                items: updatedItems,
-                totalAmount: newTotalAmount,
-            })
-        );
+
         return { items: updatedItems, totalAmount: newTotalAmount };
     }
     if (action.type === "REMOVE") {
@@ -57,11 +49,10 @@ const cartReducer = (state, action) => {
             updatedItems = [...state.items];
             updatedItems[existingCartItemIndex] = updatedItem;
         }
-        localStorage.setItem(
-            "cart",
-            JSON.stringify({ items: updatedItems, totalAmount: newTotalAmount })
-        );
         return { items: updatedItems, totalAmount: newTotalAmount };
+    }
+    if (action.type === "CLEAR") {
+        return defaultCartState;
     }
     return defaultCartState;
 };
@@ -78,11 +69,15 @@ function CartProvider({ children }) {
     const removeItemFromCartHandler = (id) => {
         dispatchCartAction({ type: "REMOVE", id });
     };
+    const clearCartHandler = () => {
+        dispatchCartAction({ type: "CLEAR" });
+    };
     const cartContext = {
         items: cartState.items,
         totalAmount: cartState.totalAmount,
         addItem: addItemToCartHandler,
         removeItem: removeItemFromCartHandler,
+        clearCart: clearCartHandler,
     };
     return (
         <CartContext.Provider value={cartContext}>
